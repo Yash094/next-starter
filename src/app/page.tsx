@@ -78,9 +78,9 @@ function ThirdwebPayExample() {
     // the client you have created via `createThirdwebClient()`
     client,
     // the chain the contract is deployed on
-    chain: defineChain(CHAIN_ID_GOES_HERE),
+    chain: defineChain(137),
     // the contract's address
-    address: "CONTRACT_ADDRESS_GOES_HERE",
+    address: "0x72df9E84101D32a7458fa90863aaE7b6eFA8DD08",
   });
   const transaction = claimTo({
     contract,
