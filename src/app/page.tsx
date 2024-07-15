@@ -1,7 +1,17 @@
+"use client";
 import Image from "next/image";
-import { ConnectButton } from "thirdweb/react";
 import thirdwebIcon from "@public/thirdweb.svg";
 import { client } from "./client";
+import { getContract, Hex } from "thirdweb";
+import { defineChain } from "thirdweb/chains";
+import { claimTo } from "thirdweb/extensions/erc721";
+import {
+  ConnectButton,
+  TransactionButton,
+  useActiveAccount,
+  useSendTransaction,
+} from "thirdweb/react";
+import React, { useState } from "react";
 
 export default function Home() {
   return (
@@ -19,7 +29,7 @@ export default function Home() {
           />
         </div>
 
-        <ThirdwebResources />
+        <ThirdwebPayExample />
       </div>
     </main>
   );
@@ -54,45 +64,54 @@ function Header() {
   );
 }
 
-function ThirdwebResources() {
+function ThirdwebPayExample() {
+  const [isLoading, setIsLoading] = useState(false);
+  const address = useActiveAccount()?.address;
+  const { mutate: sendTx, data: transactionResult } = useSendTransaction({
+    // customisations
+    payModal: {
+      buyWithCrypto: false,
+      // buyWithFiat: false,
+    },
+  });
+  const contract = getContract({
+    // the client you have created via `createThirdwebClient()`
+    client,
+    // the chain the contract is deployed on
+    chain: defineChain(CHAIN_ID_GOES_HERE),
+    // the contract's address
+    address: "CONTRACT_ADDRESS_GOES_HERE",
+  });
+  const transaction = claimTo({
+    contract,
+    to: address as Hex,
+    quantity: 1n,
+  });
   return (
-    <div className="grid gap-4 lg:grid-cols-3 justify-center">
-      <ArticleCard
-        title="thirdweb SDK Docs"
-        href="https://portal.thirdweb.com/typescript/v5"
-        description="thirdweb TypeScript SDK documentation"
-      />
+    <div className="pb-10 flex items-center justify-center container max-w-screen-lg mx-auto">
+      <TransactionButton
+        payModal={{
+          buyWithCrypto: false,
+        }}
+        transaction={() => {
+          // Create a transaction object and return it
 
-      <ArticleCard
-        title="Components and Hooks"
-        href="https://portal.thirdweb.com/typescript/v5/react"
-        description="Learn about the thirdweb React components and hooks in thirdweb SDK"
-      />
-
-      <ArticleCard
-        title="thirdweb Dashboard"
-        href="https://thirdweb.com/dashboard"
-        description="Deploy, configure, and manage your smart contracts from the dashboard."
-      />
+          return transaction;
+        }}
+      >
+        MINT PAY TRANSACTION (Transaction Button)
+      </TransactionButton>
+      <button
+        className="bg-white m-2 text-black p-4"
+        onClick={async (e) => {
+          setIsLoading(true);
+          sendTx(transaction);
+        }}
+      >
+        {isLoading
+          ? "Loading..."
+          : "MINT PAY TRANSACTION (useSendTransaction Hook)"}
+      </button>
     </div>
-  );
-}
-
-function ArticleCard(props: {
-  title: string;
-  href: string;
-  description: string;
-}) {
-  return (
-    <a
-      href={props.href + "?utm_source=next-template"}
-      target="_blank"
-      className="flex flex-col border border-zinc-800 p-4 rounded-lg hover:bg-zinc-900 transition-colors hover:border-zinc-700"
-    >
-      <article>
-        <h2 className="text-lg font-semibold mb-2">{props.title}</h2>
-        <p className="text-sm text-zinc-400">{props.description}</p>
-      </article>
-    </a>
   );
 }
