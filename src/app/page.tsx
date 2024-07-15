@@ -2,7 +2,7 @@
 import Image from "next/image";
 import thirdwebIcon from "@public/thirdweb.svg";
 import { client } from "./client";
-import { getContract, Hex } from "thirdweb";
+import { getContract, Hex, prepareTransaction, toWei } from "thirdweb";
 import { defineChain } from "thirdweb/chains";
 import { claimTo } from "thirdweb/extensions/erc721";
 import {
@@ -78,9 +78,9 @@ function ThirdwebPayExample() {
     // the client you have created via `createThirdwebClient()`
     client,
     // the chain the contract is deployed on
-    chain: defineChain(137),
+    chain: defineChain(CHAIN_ID_FOR_THE_TRANSACTION),
     // the contract's address
-    address: "0x72df9E84101D32a7458fa90863aaE7b6eFA8DD08",
+    address: "CONTRACT_TO_MAKE_THE_TRANSACTION_ON",
   });
   const transaction = claimTo({
     contract,
@@ -112,6 +112,28 @@ function ThirdwebPayExample() {
           ? "Loading..."
           : "MINT PAY TRANSACTION (useSendTransaction Hook)"}
       </button>
+
+      <TransactionButton
+        payModal={{
+          buyWithCrypto: false,
+        }}
+        transaction={() => {
+          // Create a transaction object and return it
+          const transaction = prepareTransaction({
+            // The account that will be the receiver
+            to: "WALLET_TO_TRANSFER_FUNDS",
+            // The value is the amount of ether you want to send with the transaction
+            value: toWei("AMOUNT_TO_TRANSFER"),
+            // The chain to execute the transaction on
+            chain: defineChain(CHAIN_ID_FOR_THE_TRANSACTION),
+            // Your thirdweb client
+            client,
+          });
+          return transaction;
+        }}
+      >
+        Transfer Funds Button
+      </TransactionButton>
     </div>
   );
 }
